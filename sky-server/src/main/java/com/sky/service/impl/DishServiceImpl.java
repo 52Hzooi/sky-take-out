@@ -8,10 +8,12 @@ import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
+import com.sky.entity.Setmeal;
 import com.sky.exception.DeletionNotAllowedException;
 import com.sky.mapper.DishFlavorMapper;
 import com.sky.mapper.DishMapper;
-import com.sky.mapper.SetMealDishMapper;
+import com.sky.mapper.SetmealDishMapper;
+import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
 import com.sky.service.DishService;
 import com.sky.vo.DishVO;
@@ -20,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,7 +33,9 @@ public class DishServiceImpl implements DishService {
     @Autowired
     private DishFlavorMapper dishFlavorMapper;
     @Autowired
-    private SetMealDishMapper setMealDishMapper;
+    private SetmealDishMapper setMealDishMapper;
+    @Autowired
+    private SetmealMapper setmealMapper;
 
     @Override
     //事务注解
@@ -68,7 +73,7 @@ public class DishServiceImpl implements DishService {
             }
         }
         //判断菜品是否被套餐关联
-        List<Long> setMealIds = setMealDishMapper.getSetMealDishByIds(ids);
+        List<Long> setMealIds = setMealDishMapper.getSetmealIdsByDishIds(ids);
         if (setMealIds != null && !setMealIds.isEmpty()) {
             // 关联了，不能删除
             throw new DeletionNotAllowedException(MessageConstant.DISH_BE_RELATED_BY_SETMEAL);
@@ -108,6 +113,46 @@ public class DishServiceImpl implements DishService {
         if (flavors != null && !flavors.isEmpty()) {
             flavors.forEach(dishFlavor -> dishFlavor.setDishId(dishDTO.getId()));
             dishFlavorMapper.insertBatch(flavors);
+        }
+    }
+
+    @Override
+    public List<Dish> getByCategoryId(Long categoryId) {
+        List<Dish> dishes = dishMapper.getByCategoryId(categoryId);
+//        List<DishVO> dishVOS = new ArrayList<>();
+//        for (int i = 0; i < dishes.size(); i++) {
+//            Dish dish = dishes.get(i);
+//            DishVO dishVO = new DishVO();
+//            BeanUtils.copyProperties(dish, dishVO);
+//            List<DishFlavor> flavors = dishFlavorMapper.getByDishId(dish.getId());
+//            dishVO.setFlavors(flavors);
+//            dishVOS.add(dishVO);
+//        }
+        return dishes;
+    }
+
+    @Override
+    @Transactional
+    public void updateStatus(Integer status, Long id) {
+        Dish dish = Dish.builder()
+                .id(id)
+                .status(status)
+                .build();
+        dishMapper.update(dish);
+        if (status == StatusConstant.DISABLE) {
+            //还要停售相关的套餐
+            List<Long> dishIds = new ArrayList<>();
+            dishIds.add(id);
+            List<Long> setmealIds = setMealDishMapper.getSetmealIdsByDishIds(dishIds);
+            if (setmealIds != null && !setmealIds.isEmpty()) {
+                for (Long setmealId : setmealIds) {
+                    Setmeal setmeal = Setmeal.builder()
+                            .id(setmealId)
+                            .status(StatusConstant.DISABLE)
+                            .build();
+                    setmealMapper.update(setmeal);
+                }
+            }
         }
     }
 
