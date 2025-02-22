@@ -9,6 +9,8 @@ import com.sky.vo.SetmealVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+
 @Mapper
 public interface SetmealMapper {
 
@@ -23,7 +25,13 @@ public interface SetmealMapper {
     @AutoFill(OperationType.INSERT)
     void insert(Setmeal setmeal);
 
+    @AutoFill(OperationType.UPDATE)
     void update(Setmeal setmeal);
 
     Page<SetmealVO> pageQuery(SetmealPageQueryDTO setmealPageQueryDTO);
+
+    @Select("select * from setmeal where id = #{id}")
+    Setmeal getById(Long id);
+
+    void deleteByIds(List<Long> ids);
 }
