@@ -4,4 +4,4 @@
 *.class
 *Test.java
 **/test/
-/sky-server/src/main/resources/aliOss.yml
+/sky-server/src/main/resources/common.yml
