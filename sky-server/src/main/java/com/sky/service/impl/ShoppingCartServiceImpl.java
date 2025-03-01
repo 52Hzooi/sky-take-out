@@ -58,4 +58,17 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             shoppingCartMapper.insert(shoppingCart);
         }
     }
+
+    @Override
+    public List<ShoppingCart> showShoppingCart(Long currentId) {
+        ShoppingCart shoppingCart = ShoppingCart.builder()
+                .id(currentId)
+                .build();
+        return shoppingCartMapper.list(shoppingCart);
+    }
+
+    @Override
+    public void cleanShoppingCart(Long currentId) {
+        shoppingCartMapper.delByUserId(currentId);
+    }
 }
