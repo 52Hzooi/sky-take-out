@@ -12,6 +12,7 @@ import com.sky.service.ShoppingCartService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +28,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     private SetmealMapper setmealMapper;
 
     @Override
+    @Transactional
     public void addShoppingCart(ShoppingCartDTO shoppingCartDTO) {
         //判断购物车内是否已存在这个商品
         ShoppingCart shoppingCart = new ShoppingCart();
@@ -70,5 +72,25 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     @Override
     public void cleanShoppingCart(Long currentId) {
         shoppingCartMapper.delByUserId(currentId);
+    }
+
+    @Override
+    @Transactional
+    public void sub(ShoppingCartDTO shoppingCartDTO) {
+        ShoppingCart shoppingCart = new ShoppingCart();
+        BeanUtils.copyProperties(shoppingCartDTO, shoppingCart);
+        Long userId = BaseContext.getCurrentId();
+        shoppingCart.setUserId(userId);
+        List<ShoppingCart> list = shoppingCartMapper.list(shoppingCart);
+        if (list != null && !list.isEmpty()) {
+            shoppingCart = list.get(0);
+            if (shoppingCart.getNumber() == 1) {
+                shoppingCartMapper.delById(shoppingCart.getId());
+            } else {
+                shoppingCart.setNumber(shoppingCart.getNumber() - 1);
+                shoppingCartMapper.updateNumberById(shoppingCart);
+            }
+        }
+
     }
 }
