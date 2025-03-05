@@ -55,4 +55,15 @@ sky:
   wechat:
     appid: ${wechat.appid}
     secret: ${wechat.secret}
+    mchid: ${wechat.mchid}
+    mchSerialNo: ${wechat.mchSerialNo}
+    privateKeyFilePath: ${wechat.privateKeyFilePath}
+    apiV3Key: ${wechat.apiV3Key}
+    weChatPayCertFilePath: ${wechat.weChatPayCertFilePath}
+    notifyUrl: ${wechat.notifyUrl}
+    refundNotifyUrl: ${wechat.refundNotifyUrl}
+  shop:
+    address: ${shop.address}
+  baidu:
+    ak: ${baidu.ak}
 
